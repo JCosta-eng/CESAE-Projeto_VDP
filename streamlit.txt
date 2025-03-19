@@ -1,0 +1,17 @@
+pip instll streamlit
+
+import streamlit as st
+
+inserir no terminal: streamlit.exe run app.py
+quando pedir o email, pressionar "enter"
+abrir no browser o ip, p.ex.: Network URL: http://192.168.1.125:8501
+
+escrever o resto do código por aí fora. Tudo pronto. Fazer rerun para dar update. 
+
+
+
+### PARA DAR DEPLOY ###
+https://docs.streamlit.io/deploy/streamlit-community-cloud/get-started
+
+### GRAFICOS DO STREAMLIT ###
+https://docs.streamlit.io/develop/api-reference/charts

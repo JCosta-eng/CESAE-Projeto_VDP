@@ -1,0 +1,48 @@
+Criar uma pasta de projeto fora do ONEDRIVE, ex. "apiex1";
+Abrir VSCODE, colocando a pasta de raíz como a pasta de raíz do projeto, neste caso, PATH:/"apiex1"
+(substituir path pela vossa pasta onde tem os projetos, que deve estar fora do ONEDRIVE).
+
+VSCODE: RUN -> New terminal -> command prompt
+
+python -m venv env
+
+(este comando cria um virtual environment com o nome "env", isto permite que se instale e se coloque todas as dependências de uma aplicação na pasta do projeto, sendo agora um package completo)  
+
+env\Scripts\activate
+
+criar um ficheiro texto na raíz da pasta de projeto (ex."apiex1"), com o nome "requirements"
+
+preencher todos as librarias necessárias no conteúdo do ficheiro .txt
+(para o presente exemplo, preencher apenas com "requests")
+
+---- GUARDE O FICHEIRO "requirements" ------- (pode encerrar o mesmo agora)
+
+inserir no terminal: 
+
+pip install -r requirements.txt
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+{OPCIONAL: se o terminal devolver um link a verde, por favor copiar e colar o link no terminal para dar update, será semelhante a: 
+pip install --upgrade pip
+
+ou
+
+python -m pip install -U pip
+}
+
+Para continuar, crie um ficheiro:
+.py para python
+.ipynb para jupyter
+
+com o nome do seu projeto, ex.("APIsapo.py") e selecione o compilador com (env), que será referente ao environment criado acima. 
+
+Ao correr o código, deverá observar no canto inferior direito o seguinte: "{}Python  3.12.8 ('env':venv)"
+Nota: o 3.12.8 é a versão python, este número será alterado conforme a versão que tem instalada.
+
+
+SEMPRE QUE INSERE NOVAS LIBRARIES NO FICHEIRO .TXT tipo "REQUIREMENTS" DEVE CORRER:
+
+pip install -r requirements.txt
+
+(se o ficheiro tiver outro nome, substituir "requirements" pelo nome do ficheiro)
+
