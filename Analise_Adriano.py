@@ -79,6 +79,7 @@ def pitstop_mais_rapido(data):
     fastest_pitstops = fastest_pitstops.rename(columns={"name_x": "Piloto", "surname": "Sobrenome", "name_y": "Circuito", "milliseconds": "Pit Stop Mais Rápido (ms)"})
     
     return fastest_pitstops
+
 def grafico_tempo_medio_pitstops(data):
     pit_stops = data["dfpit_stops"].merge(data["dfraces"], on="raceId")
     
@@ -92,10 +93,10 @@ def grafico_tempo_medio_pitstops(data):
 
 def piloto_mais_rapido_ganhou(data):
     # Mesclar os datasets necessários
-    lap_times = data["dflap_times"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfresults"], on=["raceId", "driverId"])
+    lap_times = data["dflap_times"].merge(data["dfraces"], on="raceId").merge(data["dfresults"], on=["raceId", "driverId"]).merge(data["dfdrivers"], on="driverId")
     
-    # Identificar o melhor tempo por corrida
-    best_laps = lap_times.loc[lap_times.groupby("raceId")["milliseconds"].idxmin(), ["raceId", "name_x", "surname", "milliseconds", "positionOrder"]]
+  # Identificar o melhor tempo por corrida
+    best_laps = lap_times.loc[lap_times.groupby("raceId")["milliseconds"].idxmin(), ["raceId", "forename", "surname", "milliseconds", "positionOrder"]]
     
     # Verificar se o piloto venceu a corrida
     best_laps["Ganhou?"] = best_laps["positionOrder"] == 1
@@ -111,7 +112,7 @@ def StreamDash():
 
     # Sidebar
     st.sidebar.title("Menu")
-    page = st.sidebar.radio("Escolha uma página", ["Home", "Plots and Graphs", "About", "Piloto Mais Rápido", "Pit Stop Mais Rápido", "Gráfico Pit Stops"])
+    page = st.sidebar.radio("Escolha uma página", ["Home", "Plots and Graphs", "About", "Piloto Mais Rápido", "Pit Stop Mais Rápido", "Gráfico Pit Stops", "Piloto Mais Rápido Ganhou?"])
 
     if page == "Home":
         home.show()
