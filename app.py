@@ -242,38 +242,58 @@ def grafico_melhor_pitstop_por_ano(dfs):  # Análise 2 Parte 2
 
     st.plotly_chart(fig, use_container_width=True)
 
-def circuitos_com_mais_dnfs(dfs):  # Análise 3
+def circuitos_com_mais_dnfs(dfs):  # Análise 3 - versão final 100% correta
 
+
+    # Merge dos dados principais
     df = dfs["results"].merge(dfs["status"], on="statusId")
     df = df.merge(dfs["races"][["raceId", "year", "circuitId"]], on="raceId")
     df = df.merge(dfs["circuits"][["circuitId", "name"]], on="circuitId").rename(columns={"name": "Circuito"})
 
-    dnf_df = df[~df['status'].str.contains("Finished", case=False)]
+    # Definir status que significam que o piloto terminou a corrida
+    terminou_status = dfs["status"]["status"].str.contains(r"Finished|\+[1-9] Lap", case=False)
+    status_ids_terminou = dfs["status"][terminou_status]["statusId"].unique()
 
-    anos_disponiveis = ["Total"] + sorted(dnf_df["year"].unique())
+    # Marcar como DNF todos os que NÃO terminaram
+    df["DNF"] = ~df["statusId"].isin(status_ids_terminou)
+
+    # Seleção do ano
+    anos_disponiveis = ["Total"] + sorted(df["year"].unique())
     selecao = st.radio("Seleciona um ano ou vê o total histórico de abandonos", anos_disponiveis, horizontal=True)
 
     if selecao == "Total":
-        df_filtrado = dnf_df.copy()
-        titulo = "📉 Circuitos com Mais DNFs na História"
+        df_filtrado = df.copy()
+        titulo = "📉 Circuitos com Maior Percentagem de DNFs na História"
     else:
-        df_filtrado = dnf_df[dnf_df["year"] == selecao]
-        titulo = f"📉 Circuitos com Mais DNFs em {selecao}"
+        df_filtrado = df[df["year"] == selecao]
+        titulo = f"📉 Circuitos com Maior Percentagem de DNFs em {selecao}"
 
+    # Total de participações por circuito
+    total_participacoes = df_filtrado.groupby("Circuito")["driverId"].count()
 
-    contagem = df_filtrado["Circuito"].value_counts().head(10)
+    # Total de DNFs por circuito
+    total_dnfs = df_filtrado[df_filtrado["DNF"]].groupby("Circuito")["driverId"].count()
 
+    # Percentagem de DNFs por circuito
+    percentagens = (total_dnfs / total_participacoes).dropna() * 100
 
+    # Top 10 circuitos com mais DNFs
+    top_percentagens = percentagens.sort_values(ascending=False).head(10)
+
+    # Gráfico
     st.subheader(titulo)
     fig, ax = plt.subplots(figsize=(8, 5))
     cores = ['#FF9999', '#FFCC99', '#FFFF99', '#CCFFCC', '#99CCFF', 
              '#CBA6F7', '#FFC0CB', '#B0E0E6', '#FFE4B5', '#E6E6FA']
-    barras = ax.barh(contagem.index[::-1], contagem.values[::-1], color=cores[:len(contagem)], edgecolor="black")
-    ax.bar_label(barras, labels=contagem.values[::-1], fontsize=9, color='black')
-    ax.set_xlabel("Número de DNFs")
+    barras = ax.barh(top_percentagens.index[::-1], top_percentagens.values[::-1],
+                     color=cores[:len(top_percentagens)], edgecolor="black")
+    ax.bar_label(barras, labels=[f"{v:.1f}%" for v in top_percentagens.values[::-1]],
+                 fontsize=9, color='black')
+    ax.set_xlabel("Percentagem de DNFs (por participação)")
     ax.set_ylabel("Circuito")
-    ax.set_title("Top 10 Circuitos com Mais DNFs")
+    ax.set_title("Top 10 Circuitos com Mais DNFs (%)")
     st.pyplot(fig)
+
 
 def piloto_com_mais_vitorias(dfs):  # Análise 4
 
