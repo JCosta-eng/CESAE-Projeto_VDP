@@ -55,22 +55,64 @@ def read_dataset():
         "dfstatus": pd.read_csv("dataset/status.csv")
     }
     return datasets
-#-----------------------------------------
-#Functions:
+
+def piloto_mais_rapido(data):
+    # Mesclar os datasets necessários
+    lap_times = data["dflap_times"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfcircuits"], on="circuitId")
+    
+    # Identificar o melhor tempo por circuito
+    best_laps = lap_times.loc[lap_times.groupby("circuitId")['milliseconds'].idxmin(), ["name_x", "surname", "name_y", "milliseconds"]]
+    
+    # Renomear colunas
+    best_laps = best_laps.rename(columns={"name_x": "Piloto", "surname": "Sobrenome", "name_y": "Circuito", "milliseconds": "Melhor Tempo (ms)"})
+    
+    return best_laps
+
+def pitstop_mais_rapido(data):
+    # Mesclar os datasets necessários
+    pit_stops = data["dfpit_stops"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfcircuits"], on="circuitId")
+    
+    # Identificar o pit stop mais rápido
+    fastest_pitstops = pit_stops.loc[pit_stops.groupby("circuitId")['milliseconds'].idxmin(), ["name_x", "surname", "name_y", "milliseconds"]]
+    
+    # Renomear colunas
+    fastest_pitstops = fastest_pitstops.rename(columns={"name_x": "Piloto", "surname": "Sobrenome", "name_y": "Circuito", "milliseconds": "Pit Stop Mais Rápido (ms)"})
+    
+    return fastest_pitstops
+def grafico_tempo_medio_pitstops(data):
+    pit_stops = data["dfpit_stops"].merge(data["dfraces"], on="raceId")
+    
+    # Calcular o tempo médio de pit stops por ano
+    avg_pitstops = pit_stops.groupby("year")["milliseconds"].mean().reset_index()
+    
+    # Criar gráfico de linhas
+    fig = px.line(avg_pitstops, x="year", y="milliseconds", title="Tempo Médio de Pit Stops ao Longo dos Anos", labels={"milliseconds": "Tempo Médio (ms)", "year": "Ano"})
+    
+    return fig
+
+def piloto_mais_rapido_ganhou(data):
+    # Mesclar os datasets necessários
+    lap_times = data["dflap_times"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfresults"], on=["raceId", "driverId"])
+    
+    # Identificar o melhor tempo por corrida
+    best_laps = lap_times.loc[lap_times.groupby("raceId")["milliseconds"].idxmin(), ["raceId", "name_x", "surname", "milliseconds", "positionOrder"]]
+    
+    # Verificar se o piloto venceu a corrida
+    best_laps["Ganhou?"] = best_laps["positionOrder"] == 1
+    
+    # Renomear colunas
+    best_laps = best_laps.rename(columns={"name_x": "Piloto", "surname": "Sobrenome", "milliseconds": "Melhor Tempo (ms)"})
+    
+    return best_laps
+
+# Streamlit Dashboard
 def StreamDash():
-    
-    #Dados
-    #dfcircuits = data["dfcircuits"]
-    #dfdrivers = data["dfdrivers"]
-    
-    #Config
-    st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
+    st.set_page_config(page_title="Dashboard", page_icon="\U0001F4CA", layout="wide")
 
-    #Sidebar
+    # Sidebar
     st.sidebar.title("Menu")
-    page = st.sidebar.radio("Escolha uma página", ["Home", "Plots and Graphs", "About"])
+    page = st.sidebar.radio("Escolha uma página", ["Home", "Plots and Graphs", "About", "Piloto Mais Rápido", "Pit Stop Mais Rápido", "Gráfico Pit Stops"])
 
-    #Funcoes paginas
     if page == "Home":
         home.show()
         
