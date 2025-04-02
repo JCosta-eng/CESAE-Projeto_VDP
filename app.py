@@ -1,26 +1,26 @@
 # Trabalho PL01 - VDP
-## CESAE DIGITAL - PORTO - DATA ANALYST 2024
-### Docente: Pedro Mendonça
-#### Membros: Bruno Bernardo, Adriano Rodrigues, Jorge Costa.
-##### 02 de Abril de 2025
+# CESAE DIGITAL - PORTO - DATA ANALYST 2024
+# Docente: Pedro Mendonça
+# Membros: Bruno Bernardo, Adriano Rodrigues, Jorge Costa.
+# 02 de Abril de 2025
 
-#HOW TO ---------------------------------
-### 1- Criar env
-#run: python -m venv env
-#run: env\Scripts\activate
-
-### 2- Install libraries
-#1 pip install -r requirements.txt
-#2 python.exe -m pip install --upgrade pip
-
-
-####3 
-# verificar se está no environment "env", se não, correr env\Scripts\activate
-# run: 
-
+# HOW TO ---------------------------------
+# 1-        Criar env (ambiente virtual)
+#           python -m venv env
+#           executar no terminal: env\Scripts\activate
+#      Se .env já existir, ativar apenas o ambiente virtual
+#      executar no terminal: env\Scripts\activate
+#
+# 2- Instalar libraries:
+#    pip install -r requirements.txt
+#    python.exe -m pip install --upgrade pip
+#
+# 3- Executar o Streamlit no terminal: streamlit run app.py
+#    
+# 4- Aceder ao dashboard no browser: **** CONSULTAR IP NO TERMINAL ****  EX."http://192.168.1.125:8501"
 #-----------------------------------------
 
-#Libraries 
+# Libraries 
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -29,14 +29,14 @@ import plotly.express as px
 import sys
 import os
 
-#Paginas
+# Adicionar pasta "views" ao path (se houver módulos separados)
 sys.path.append(os.path.abspath("views"))
-
 import home
 import plots
 import about
 
-#dataframes
+# Função para leitura dos datasets
+# (pode ser alterada para ler de um banco de dados ou API no futuro)
 def read_dataset():
     datasets = {
         "dfcircuits": pd.read_csv("dataset/circuits.csv"),
@@ -56,121 +56,41 @@ def read_dataset():
     }
     return datasets
 
-def piloto_mais_rapido(data):
-    # Mesclar os datasets necessários
-    lap_times = data["dflap_times"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfcircuits"], on="circuitId")
-    
-    # Identificar o melhor tempo por circuito
-    best_laps = lap_times.loc[lap_times.groupby("circuitId")['milliseconds'].idxmin(), ["name_x", "surname", "name_y", "milliseconds"]]
-    
-    # Renomear colunas
-    best_laps = best_laps.rename(columns={"name_x": "Piloto", "surname": "Sobrenome", "name_y": "Circuito", "milliseconds": "Melhor Tempo (ms)"})
-    
-    return best_laps
-
-def pitstop_mais_rapido(data):
-    # Mesclar os datasets necessários
-    pit_stops = data["dfpit_stops"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfcircuits"], on="circuitId")
-    
-    # Identificar o pit stop mais rápido
-    fastest_pitstops = pit_stops.loc[pit_stops.groupby("circuitId")['milliseconds'].idxmin(), ["name_x", "surname", "name_y", "milliseconds"]]
-    
-    # Renomear colunas
-    fastest_pitstops = fastest_pitstops.rename(columns={"name_x": "Piloto", "surname": "Sobrenome", "name_y": "Circuito", "milliseconds": "Pit Stop Mais Rápido (ms)"})
-    
-    return fastest_pitstops
-def grafico_tempo_medio_pitstops(data):
-    pit_stops = data["dfpit_stops"].merge(data["dfraces"], on="raceId")
-    
-    # Calcular o tempo médio de pit stops por ano
-    avg_pitstops = pit_stops.groupby("year")["milliseconds"].mean().reset_index()
-    
-    # Criar gráfico de linhas
-    fig = px.line(avg_pitstops, x="year", y="milliseconds", title="Tempo Médio de Pit Stops ao Longo dos Anos", labels={"milliseconds": "Tempo Médio (ms)", "year": "Ano"})
-    
-    return fig
-
-def piloto_mais_rapido_ganhou(data):
-    # Mesclar os datasets necessários
-    lap_times = data["dflap_times"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfresults"], on=["raceId", "driverId"])
-    
-    # Identificar o melhor tempo por corrida
-    best_laps = lap_times.loc[lap_times.groupby("raceId")["milliseconds"].idxmin(), ["raceId", "name_x", "surname", "milliseconds", "positionOrder"]]
-    
-    # Verificar se o piloto venceu a corrida
-    best_laps["Ganhou?"] = best_laps["positionOrder"] == 1
-    
-    # Renomear colunas
-    best_laps = best_laps.rename(columns={"name_x": "Piloto", "surname": "Sobrenome", "milliseconds": "Melhor Tempo (ms)"})
-    
-    return best_laps
-
-# Streamlit Dashboard
-def StreamDash():
-    st.set_page_config(page_title="Dashboard", page_icon="\U0001F4CA", layout="wide")
-
-    # Sidebar
-    st.sidebar.title("Menu")
-    page = st.sidebar.radio("Escolha uma página", ["Home", "Plots and Graphs", "About", "Piloto Mais Rápido", "Pit Stop Mais Rápido", "Gráfico Pit Stops"])
-
-    if page == "Home":
-        home.show()
-        
-    elif page == "Plots and Graphs":
-        plots.show()
-        
-        
-    elif page == "About":
-        about.show()
-    
-    grafico_melhor_pitstop_por_ano(dfs)
-    mostrar_top10_tabela(dfs)
-    pilotos_por_nacionalidades(dfs)
-    circuitos_com_mais_dnfs(dfs)
-    piloto_com_mais_vitorias(dfs)
-  
-    # Display
-    
-    
-    
-    
-
-
-######## FUNÇÕES BRUNO
-
-def data_to_df(data): #auxiliar
+# Converte datasets "data" para um dicionário mais organizado (dfs)
+def data_to_df(data):
     dfs = {
-    "circuits": data["dfcircuits"],
-    "constructor_results": data["dfconstructor_results"],
-    "constructor_standings": data["dfconstructor_standings"],
-    "constructors": data["dfconstructors"],
-    "driver_standings": data["dfdriver_standings"],
-    "drivers": data["dfdrivers"],
-    "lap_times": data["dflap_times"],
-    "pit_stops": data["dfpit_stops"],
-    "qualifying": data["dfqualifying"],
-    "races": data["dfraces"],
-    "results": data["dfresults"],
-    "seasons": data["dfseasons"],
-    "sprint_results": data["dfsprint_results"],
-    "status": data["dfstatus"]
-}
+        "circuits": data["dfcircuits"],
+        "constructor_results": data["dfconstructor_results"],
+        "constructor_standings": data["dfconstructor_standings"],
+        "constructors": data["dfconstructors"],
+        "driver_standings": data["dfdriver_standings"],
+        "drivers": data["dfdrivers"],
+        "lap_times": data["dflap_times"],
+        "pit_stops": data["dfpit_stops"],
+        "qualifying": data["dfqualifying"],
+        "races": data["dfraces"],
+        "results": data["dfresults"],
+        "seasons": data["dfseasons"],
+        "sprint_results": data["dfsprint_results"],
+        "status": data["dfstatus"]
+    }
     return dfs
 
-def ms_para_legivel(ms): #auxiliar
-    
+# Função auxiliar para converter milissegundos em um formato legível (ex: 1m 23.456s)
+def ms_para_legivel(ms):
     total_seconds = ms / 1000
     minutos = int(total_seconds // 60)
     segundos = int(total_seconds % 60)
     milissegundos = int(ms % 1000)
     return f"{minutos}m {segundos}.{milissegundos:03}s"
 
-def format_rank(idx): #auxiliar
-
+# Função auxiliar para formatar rank com emojis
+def format_rank(idx):
     emojis = {0: "🥇", 1: "🥈", 2: "🥉"}
     return emojis.get(idx, f"{idx+1}º")
 
-def highlight_top3(row): #auxiliar
+# Função auxiliar para destacar as três primeiras linhas de uma tabela
+def highlight_top3(row):
     base_colors = {
         0: "background-color: rgba(255, 215, 0, 0.2);",   # Ouro suave
         1: "background-color: rgba(192, 192, 192, 0.2);",  # Prata suave
@@ -179,13 +99,98 @@ def highlight_top3(row): #auxiliar
     style = base_colors.get(row.name, "")
     return [style] * len(row)
 
-def pilotos_por_nacionalidades(datasets):  # AnálisXe 1
+#-----------------------------------------
+# Funções de Análise e Visualizações
 
-    top10_nacionalidades = datasets["drivers"]["nationality"].value_counts().head(10)
+def piloto_mais_rapido(data):
+    # Merge dos datasets: lap_times, drivers, races e circuits
+    lap_times = data["dflap_times"].merge(data["dfdrivers"], on="driverId") \
+                                 .merge(data["dfraces"], on="raceId") \
+                                 .merge(data["dfcircuits"], on="circuitId")
+    
+    # Obter o menor tempo por circuito
+    # Seleciona as colunas: nome da corrida (name_x), forename, surname, nome do circuito (name_y) e milliseconds
+    best_laps = lap_times.loc[lap_times.groupby("circuitId")['milliseconds'].idxmin(),
+                              ["name_x", "forename", "surname", "name_y", "milliseconds"]]
+    
+    # Criar a coluna "Nome" combinando forename e surname
+    best_laps["Nome"] = best_laps["forename"] + " " + best_laps["surname"]
+    
+    # Selecionar e renomear as colunas conforme os headers desejados
+    best_laps = best_laps[["name_x", "Nome", "name_y", "milliseconds"]]
+    best_laps = best_laps.rename(columns={
+        "name_x": "Grande Prémio",
+        "name_y": "Circuito",
+        "milliseconds": "Melhor volta"
+    })
+    
+    return best_laps
 
+def pitstop_mais_rapido(data):
+    # Mesclar os datasets necessários
+    pit_stops = data["dfpit_stops"].merge(data["dfdrivers"], on="driverId").merge(data["dfraces"], on="raceId").merge(data["dfcircuits"], on="circuitId")
+    
+    # Identificar o pit stop mais rápido
+    fastest_pitstops = pit_stops.loc[pit_stops.groupby("circuitId")['milliseconds'].idxmin(), ["name_x","forename","surname", "name_y", "milliseconds"]]
+    
+    # Criar a coluna "Nome" combinando forename e surname
+    fastest_pitstops["Piloto"] = fastest_pitstops["forename"] + " " + fastest_pitstops["surname"]
+    
+    # Renomear colunas
+    fastest_pitstops = fastest_pitstops.rename(columns={"name_x": "Grande Prémio", "Piloto": "Piloto", "name_y": "Circuito", "milliseconds": "Pit Stop mais rápido ms"})
+    
+    return fastest_pitstops
+
+def piloto_mais_rapido_ganhou(dfs):
+ 
+    laps = dfs["lap_times"][["raceId", "driverId", "milliseconds"]].copy()
+ 
+    laps = laps.merge(dfs["drivers"][["driverId", "forename", "surname"]], on="driverId")
+    laps = laps.merge(dfs["races"][["raceId"]], on="raceId")
+    laps = laps.merge(dfs["results"][["raceId", "driverId", "positionOrder"]], on=["raceId", "driverId"])
+ 
+    laps = laps.dropna(subset=["milliseconds", "positionOrder"])
+ 
+    best_laps = laps.loc[
+        laps.groupby("raceId")["milliseconds"].idxmin(),
+        ["raceId", "forename", "surname", "milliseconds", "positionOrder"]
+    ]
+ 
+    best_laps["Ganhou?"] = best_laps["positionOrder"] == 1
+    best_laps = best_laps.rename(columns={
+        "forename": "Nome",
+        "surname": "Sobrenome",
+        "milliseconds": "Melhor Tempo (ms)"
+    })
+ 
+    contagem = best_laps["Ganhou?"].value_counts().rename({True: "Sim", False: "Não"})
+ 
+    fig, ax = plt.subplots(figsize=(1.6, 1.6))
+    cores = ['#FF9999','#90EE90']
+    labels = contagem.index.tolist()
+    valores = contagem.values
+    ax.pie(
+        valores,
+        labels=labels,
+        autopct='%1.1f%%',
+        colors=cores,
+        startangle=90,
+        wedgeprops={'edgecolor': 'white'}
+    )
+    #ax.set_title("O Piloto Mais Rápido Ganhou a Corrida?", fontsize=9)
+ 
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.pyplot(fig)
+ 
+    percentagem = best_laps["Ganhou?"].mean() * 100
+    st.metric("Percentagem de vitórias do piloto mais rápido", f"{percentagem:.1f}%")
+
+def pilotos_por_nacionalidades(dfs):
+    # Top 10 nacionalidades dos pilotos
+    top10_nacionalidades = dfs["drivers"]["nationality"].value_counts().head(10)
     cores = ['#FF9999', '#FFCC99', '#FFFF99', '#CCFFCC', '#99CCFF', 
              '#CBA6F7', '#FFC0CB', '#B0E0E6', '#FFE4B5', '#E6E6FA']
-
     fig1, ax1 = plt.subplots(figsize=(7, 4))
     barras = ax1.bar(top10_nacionalidades.index, top10_nacionalidades.values, color=cores, edgecolor='black')
     ax1.bar_label(barras, label_type='center', color='black', fontsize=9)
@@ -196,8 +201,7 @@ def pilotos_por_nacionalidades(datasets):  # AnálisXe 1
     fig1.tight_layout()
     st.pyplot(fig1)
 
-def mostrar_top10_tabela(dfs):  # Análise 2
-
+def mostrar_top10_tabela(dfs):
     df = dfs["pit_stops"].merge(
         dfs["results"][['raceId', 'driverId', 'constructorId']], on=['raceId', 'driverId']
     )
@@ -213,41 +217,52 @@ def mostrar_top10_tabela(dfs):  # Análise 2
     df = df.merge(
         dfs["constructors"][['constructorId', 'name']], on='constructorId'
     ).rename(columns={'name': 'Equipa'})
-
+    
     df['milliseconds'] = pd.to_numeric(df['milliseconds'], errors='coerce')
     df = df[df['milliseconds'] <= 300000]
 
     anos_disponiveis = ["História"] + sorted(df['year'].unique())
     selecao = st.radio("Seleciona o ano ou vê os melhores da história", anos_disponiveis, horizontal=True)
-
+    
     if selecao == "História":
         top10 = df.nsmallest(10, 'milliseconds').copy()
-        st.subheader("📋 Top 10 Pitstops da História")
+        st.subheader("Top 10 Pitstops da História")
     else:
-        ano = int(selecao)
-        top10 = df[df['year'] == ano].nsmallest(10, 'milliseconds').copy()
-        st.subheader(f"📋 Top 10 Pitstops – {ano}")
+        top10 = df[df['year'] == selecao].nsmallest(10, 'milliseconds').copy()
+        st.subheader(f"Top 10 Pitstops – {selecao}")
 
     top10['Tempo (s)'] = (top10['milliseconds'] / 1000).round(3).astype(str) + "s"
     top10['Piloto'] = top10['forename'] + ' ' + top10['surname']
     top10.reset_index(drop=True, inplace=True)
     top10['Rank'] = [format_rank(i) for i in top10.index]
-
+    
     colunas_base = ['Rank', 'Piloto', 'Equipa', 'Circuito', 'Tempo (s)']
     if selecao == "História":
         colunas_base.append('year')
         tabela = top10[colunas_base].rename(columns={'year': 'Ano'})
     else:
         tabela = top10[colunas_base]
-
+    
+    # Configurar a largura das colunas e aplicar destaque nas top 3 posições
     col_widths = [{"selector": f"th.col{i}", "props": [("width", width)]}
                   for i, width in enumerate(["40px", "200px", "200px", "200px", "100px", "80px"])]
     styled_tabela = tabela.style.set_table_styles(col_widths).apply(highlight_top3, axis=1)
+    
+    # Utilizar st.write para renderizar o Styler
+    st.write(styled_tabela)
 
-    st.dataframe(styled_tabela, use_container_width=True, hide_index=True)
+def grafico_tempo_medio_pitstops(data):
+    pit_stops = data["dfpit_stops"].merge(data["dfraces"], on="raceId")
+    
+    # Calcular o tempo médio de pit stops por ano
+    avg_pitstops = pit_stops.groupby("year")["milliseconds"].mean().reset_index()
+    
+    # Criar gráfico de linhas
+    fig = px.line(avg_pitstops, x="year", y="milliseconds", title="Tempo Médio de Pit Stops ao Longo dos Anos", labels={"milliseconds": "Tempo Médio (ms)", "year": "Ano"})
+    
+    return fig
 
-def grafico_melhor_pitstop_por_ano(dfs):  # Análise 2 Parte 2
-
+def grafico_melhor_pitstop_por_ano(dfs):
     df = dfs["pit_stops"].merge(
         dfs["results"][['raceId', 'driverId', 'constructorId']], on=['raceId', 'driverId']
     )
@@ -260,15 +275,14 @@ def grafico_melhor_pitstop_por_ano(dfs):  # Análise 2 Parte 2
     df = df.merge(
         dfs["constructors"][['constructorId', 'name']], on='constructorId'
     )
-
     df['milliseconds'] = pd.to_numeric(df['milliseconds'], errors='coerce')
     df = df[df['milliseconds'] <= 300000]
-
+    
     melhores = df.sort_values('milliseconds').groupby('year').first().reset_index()
     melhores['Tempo (s)'] = (melhores['milliseconds'] / 1000).round(3)
     melhores['Piloto'] = melhores['forename'] + ' ' + melhores['surname']
     melhores['Equipa'] = melhores['name']
-
+    
     fig = px.line(
         melhores,
         x='year',
@@ -276,53 +290,43 @@ def grafico_melhor_pitstop_por_ano(dfs):  # Análise 2 Parte 2
         markers=True,
         hover_name='Piloto',
         hover_data={'Equipa': True, 'Tempo (s)': True, 'year': False},
-        title="📈 Melhor Pitstop por Ano"
+        title="Melhor Pitstop por Ano"
     )
-
+    
     fig.update_traces(line=dict(width=2), marker=dict(size=8))
     fig.update_layout(xaxis_title="Ano", yaxis_title="Tempo", hovermode="x unified")
-
+    
     st.plotly_chart(fig, use_container_width=True)
 
-def circuitos_com_mais_dnfs(dfs):  # Análise 3 - versão final 100% correta
-
-
-    # Merge dos dados principais
+def circuitos_com_mais_dnfs(dfs):
+    # Merge para análise dos DNFs
     df = dfs["results"].merge(dfs["status"], on="statusId")
     df = df.merge(dfs["races"][["raceId", "year", "circuitId"]], on="raceId")
-    df = df.merge(dfs["circuits"][["circuitId", "name"]], on="circuitId").rename(columns={"name": "Circuito"})
-
+    df = df.merge(dfs["circuits"][["circuitId", "name"]], on="circuitId") \
+           .rename(columns={"name": "Circuito"})
+    
     # Definir status que significam que o piloto terminou a corrida
     terminou_status = dfs["status"]["status"].str.contains(r"Finished|\+[1-9] Lap", case=False)
     status_ids_terminou = dfs["status"][terminou_status]["statusId"].unique()
-
-    # Marcar como DNF todos os que NÃO terminaram
+    
+    # Marcar DNFs
     df["DNF"] = ~df["statusId"].isin(status_ids_terminou)
-
-    # Seleção do ano
+    
     anos_disponiveis = ["Total"] + sorted(df["year"].unique())
     selecao = st.radio("Seleciona um ano ou vê o total histórico de abandonos", anos_disponiveis, horizontal=True)
-
+    
     if selecao == "Total":
         df_filtrado = df.copy()
-        titulo = "📉 Circuitos com Maior Percentagem de DNFs na História"
+        titulo = "Circuitos com Maior Percentagem de DNFs na História"
     else:
         df_filtrado = df[df["year"] == selecao]
-        titulo = f"📉 Circuitos com Maior Percentagem de DNFs em {selecao}"
-
-    # Total de participações por circuito
+        titulo = f"Circuitos com Maior Percentagem de DNFs em {selecao}"
+    
     total_participacoes = df_filtrado.groupby("Circuito")["driverId"].count()
-
-    # Total de DNFs por circuito
     total_dnfs = df_filtrado[df_filtrado["DNF"]].groupby("Circuito")["driverId"].count()
-
-    # Percentagem de DNFs por circuito
     percentagens = (total_dnfs / total_participacoes).dropna() * 100
-
-    # Top 10 circuitos com mais DNFs
     top_percentagens = percentagens.sort_values(ascending=False).head(10)
-
-    # Gráfico
+    
     st.subheader(titulo)
     fig, ax = plt.subplots(figsize=(8, 5))
     cores = ['#FF9999', '#FFCC99', '#FFFF99', '#CCFFCC', '#99CCFF', 
@@ -336,44 +340,98 @@ def circuitos_com_mais_dnfs(dfs):  # Análise 3 - versão final 100% correta
     ax.set_title("Top 10 Circuitos com Mais DNFs (%)")
     st.pyplot(fig)
 
-
-def piloto_com_mais_vitorias(dfs):  # Análise 4
-
+def piloto_com_mais_vitorias(dfs):
     dfresults = dfs["results"]
     dfdrivers = dfs["drivers"]
-
-    # Filtrar apenas os vencedores (positionOrder == 1)
+    
+    # Filtrar os vencedores (positionOrder == 1)
     vitorias = dfresults[dfresults['positionOrder'] == 1]
     contagem = vitorias['driverId'].value_counts().reset_index()
     contagem.columns = ['driverId', 'vitorias']
-
-    # Juntar com os dados dos pilotos
     dados = contagem.merge(dfdrivers, on='driverId')
     dados['Piloto'] = dados['forename'] + ' ' + dados['surname']
-
-    # Gráfico de dispersão
+    
     fig = px.scatter(
         dados.head(10),
         x='vitorias',
         y='Piloto',
         size='vitorias',
         color='vitorias',
-        title='🏁 Pilotos com Mais Vitórias',
+        title='Pilotos com Mais Vitórias',
         labels={'vitorias': 'Vitórias', 'Piloto': 'Piloto'},
         color_continuous_scale='Blues'
     )
-
-    # Inverter ordem dos pilotos no eixo Y (mais vitórias no topo)
     fig.update_layout(
         yaxis=dict(autorange="reversed"),
         xaxis_title="Vitórias",
         yaxis_title="Piloto"
     )
-
     st.plotly_chart(fig, use_container_width=True)
 
-### >>>>>>>>>>>>>> Call Functions <<<<<<<<<<<<<<
+#-----------------------------------------
+# Dashboard principal com Streamlit
 
-data = read_dataset()
-dfs = data_to_df(data)
-StreamDash()
+def StreamDash(data, dfs):
+    st.set_page_config(page_title="Dashboard", page_icon="\U0001F4CA", layout="wide")
+    st.sidebar.image("logoF1.png", width=200)
+    st.sidebar.markdown("Formula 1 - Curiosidades em Streamlit")
+    st.sidebar.title("Menu")
+
+    page = st.sidebar.radio("Escolha uma página", ["Home", "Plots and Graphs", "About & Readme"])
+    st.sidebar.markdown("---")
+
+    if page == "Home":
+        home.show()
+        
+    elif page == "Plots and Graphs":
+        plots.show(data, dfs)
+        # Pilotos com Mais Vitórias
+        st.subheader("🏆 Pilotos com Mais Vitórias")
+        piloto_com_mais_vitorias(dfs)
+        
+        # Piloto Mais Rápido por Circuito
+        st.subheader("🏎️ Melhor volta por circuito:")
+        best_laps = piloto_mais_rapido(data)
+        best_laps["Melhor tempo"] = best_laps["Melhor volta"].apply(ms_para_legivel)
+        st.dataframe(best_laps[[ "Circuito","Nome", "Melhor tempo"]], hide_index=True)
+        
+        # #Piloto Mais Rápido que Ganhou a Corrida
+        st.subheader("🏁 O piloto com a melhor volta ganhou a corrida?")
+        piloto_mais_rapido_ganhou(dfs)
+        
+        # Pit Stop mais rápida por circuito
+        st.subheader("⏱️ Pit Stop mais rápida por circuito:")
+        fastest_pitstops_df = pitstop_mais_rapido(data)
+        fastest_pitstops_df["Pit Stop mais rápido"] = fastest_pitstops_df["Pit Stop mais rápido ms"].apply(ms_para_legivel)
+        st.dataframe(fastest_pitstops_df[["Grande Prémio", "Piloto", "Circuito", "Pit Stop mais rápido"]], hide_index=True)
+        
+        #Tempo Médio de Pit Stops ao Longo dos Anos
+        st.subheader("📈 Tempo Médio de Pit Stops ao Longo dos Anos")
+        fig_tempo_medio = grafico_tempo_medio_pitstops(data)
+        st.plotly_chart(fig_tempo_medio, use_container_width=True)
+        
+        # Melhor Pit Stop por Ano
+        st.subheader("👨‍🔧🦺 Evolução dos melhores tempos de Pit Stop")
+        grafico_melhor_pitstop_por_ano(dfs)
+        
+        # Top 10 Pit Stops
+        st.subheader("📋 Top 10 Pit Stops")
+        mostrar_top10_tabela(dfs)
+        
+        # Top 10 Nacionalidades dos Pilotos
+        st.subheader("🌍 Top 10 Nacionalidades dos Pilotos")
+        pilotos_por_nacionalidades(dfs)
+        
+        # Circuitos com Mais DNFs
+        st.subheader("📉 Circuitos com Mais DNFs")
+        circuitos_com_mais_dnfs(dfs)
+        
+    elif page == "About & Readme":
+        about.show() 
+
+#-----------------------------------------
+# Execução principal
+if __name__ == "__main__":
+    data = read_dataset()
+    dfs = data_to_df(data)
+    StreamDash(data, dfs)

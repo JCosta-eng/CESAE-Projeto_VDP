@@ -1,7 +1,10 @@
 # Data Analyst | VDP - PL01
+# CESAE DIGITAL
+# Reskilling 4 employment - Data Analyst 2024
 
 # CESAE-Projeto_VDP
- Composto por Dr. Adriano, Dr. Bruno e Dr. Jorge
+Docente: Pedro Mendonça
+Composto por Adriano Rodrigues, Bruno Bernardo e Jorge Costa
 
 
 ## Objetivos
@@ -14,7 +17,7 @@
 
 ## Proposta de Trabalho
 
-Deverá fazer download do ficheiro `dataset.zip` que se encontra na pasta `Extras` do Teams. Este é composto por múltiplos ficheiros cujo tema é Formula 1. Realize as seguintes operações:
+Deverá fazer download do ficheiro `dataset.zip` que se encontra na pasta `Extras` do Teams. Este é composto por múltiplos ficheiros cujo tema é Formula 1. Realiza as seguintes operações:
 
 1. Têm liberdade para definir a(s) análise(s) que pretendem implementar (mínimo 8);
 2. O tratamento de dados deve ser realizado **APENAS** nos ficheiros necessários para as análises definidas no ponto anterior. Devem realizar os `imports`, `merges`, análise de valores nulos e outras operações relevantes;
