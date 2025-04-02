@@ -1,3 +1,4 @@
+@ -1,142 +0,0 @@
 # Trabalho PL01 - VDP
 ## CESAE DIGITAL - PORTO - DATA ANALYST 2024
 ### Docente: Pedro Mendonça
